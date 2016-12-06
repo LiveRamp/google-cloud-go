@@ -144,6 +144,17 @@ func (lnf latestNFilter) proto() *btpb.RowFilter {
 	return &btpb.RowFilter{Filter: &btpb.RowFilter_CellsPerColumnLimitFilter{int32(lnf)}}
 }
 
+// CellsPerRowLimitFilter returns a filter that matches the first N cells of a row.
+func CellsPerRowLimitFilter(n int) Filter { return cellsPerRowLimitFilter(n) }
+
+type cellsPerRowLimitFilter int32
+
+func (cpr cellsPerRowLimitFilter) String() string { return fmt.Sprintf("cells(*, %d", cpr) }
+
+func (cpr cellsPerRowLimitFilter) proto() *btpb.RowFilter {
+	return &btpb.RowFilter{Filter: &btpb.RowFilter_CellsPerRowLimitFilter{int32(cpr)}}
+}
+
 // StripValueFilter returns a filter that replaces each value with the empty string.
 func StripValueFilter() Filter { return stripValueFilter{} }
 
