@@ -334,9 +334,7 @@ func (o *ObjectHandle) Attrs(ctx context.Context) (*ObjectAttrs, error) {
 	if err := setEncryptionHeaders(call.Header(), o.encryptionKey, false); err != nil {
 		return nil, err
 	}
-	var obj *raw.Object
-	var err error
-	err = runWithRetry(ctx, func() error { obj, err = call.Do(); return err })
+	obj, err := call.Do()
 	if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
 		return nil, ErrObjectNotExist
 	}
@@ -407,9 +405,7 @@ func (o *ObjectHandle) Update(ctx context.Context, uattrs ObjectAttrsToUpdate) (
 	if err := setEncryptionHeaders(call.Header(), o.encryptionKey, false); err != nil {
 		return nil, err
 	}
-	var obj *raw.Object
-	var err error
-	err = runWithRetry(ctx, func() error { obj, err = call.Do(); return err })
+	obj, err := call.Do()
 	if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
 		return nil, ErrObjectNotExist
 	}
@@ -449,7 +445,7 @@ func (o *ObjectHandle) Delete(ctx context.Context) error {
 	if err := applyConds("Delete", o.gen, o.conds, call); err != nil {
 		return err
 	}
-	err := runWithRetry(ctx, func() error { return call.Do() })
+	err := call.Do()
 	switch e := err.(type) {
 	case nil:
 		return nil
@@ -507,8 +503,7 @@ func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64)
 	if err := setEncryptionHeaders(req.Header, o.encryptionKey, false); err != nil {
 		return nil, err
 	}
-	var res *http.Response
-	err = runWithRetry(ctx, func() error { res, err = o.c.hc.Do(req); return err })
+	res, err := o.c.hc.Do(req)
 	if err != nil {
 		return nil, err
 	}

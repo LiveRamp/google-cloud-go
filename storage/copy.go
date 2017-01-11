@@ -116,9 +116,7 @@ func (c *Copier) callRewrite(ctx context.Context, src *ObjectHandle, rawObj *raw
 	if err := setEncryptionHeaders(call.Header(), c.src.encryptionKey, true); err != nil {
 		return nil, err
 	}
-	var res *raw.RewriteResponse
-	var err error
-	err = runWithRetry(ctx, func() error { res, err = call.Do(); return err })
+	res, err := call.Do()
 	if err != nil {
 		return nil, err
 	}
@@ -187,9 +185,8 @@ func (c *Composer) Run(ctx context.Context) (*ObjectAttrs, error) {
 	if err := setEncryptionHeaders(call.Header(), c.dst.encryptionKey, false); err != nil {
 		return nil, err
 	}
-	var obj *raw.Object
-	var err error
-	err = runWithRetry(ctx, func() error { obj, err = call.Do(); return err })
+
+	obj, err := call.Do()
 	if err != nil {
 		return nil, err
 	}

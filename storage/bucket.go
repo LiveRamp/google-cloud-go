@@ -35,13 +35,14 @@ func (b *BucketHandle) Create(ctx context.Context, projectID string, attrs *Buck
 	}
 	bkt.Name = b.name
 	req := b.c.raw.Buckets.Insert(projectID, bkt)
-	return runWithRetry(ctx, func() error { _, err := req.Context(ctx).Do(); return err })
+	_, err := req.Context(ctx).Do()
+	return err
 }
 
 // Delete deletes the Bucket.
 func (b *BucketHandle) Delete(ctx context.Context) error {
 	req := b.c.raw.Buckets.Delete(b.name)
-	return runWithRetry(ctx, func() error { return req.Context(ctx).Do() })
+	return req.Context(ctx).Do()
 }
 
 // ACL returns an ACLHandle, which provides access to the bucket's access control list.
@@ -80,12 +81,7 @@ func (b *BucketHandle) Object(name string) *ObjectHandle {
 
 // Attrs returns the metadata for the bucket.
 func (b *BucketHandle) Attrs(ctx context.Context) (*BucketAttrs, error) {
-	var resp *raw.Bucket
-	var err error
-	err = runWithRetry(ctx, func() error {
-		resp, err = b.c.raw.Buckets.Get(b.name).Projection("full").Context(ctx).Do()
-		return err
-	})
+	resp, err := b.c.raw.Buckets.Get(b.name).Projection("full").Context(ctx).Do()
 	if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
 		return nil, ErrBucketNotExist
 	}
@@ -239,12 +235,7 @@ func (it *ObjectIterator) fetch(pageSize int, pageToken string) (string, error) 
 	if pageSize > 0 {
 		req.MaxResults(int64(pageSize))
 	}
-	var resp *raw.Objects
-	var err error
-	err = runWithRetry(it.ctx, func() error {
-		resp, err = req.Context(it.ctx).Do()
-		return err
-	})
+	resp, err := req.Context(it.ctx).Do()
 	if err != nil {
 		return "", err
 	}
@@ -312,12 +303,7 @@ func (it *BucketIterator) fetch(pageSize int, pageToken string) (string, error) 
 	if pageSize > 0 {
 		req.MaxResults(int64(pageSize))
 	}
-	var resp *raw.Buckets
-	var err error
-	err = runWithRetry(it.ctx, func() error {
-		resp, err = req.Context(it.ctx).Do()
-		return err
-	})
+	resp, err := req.Context(it.ctx).Do()
 	if err != nil {
 		return "", err
 	}
